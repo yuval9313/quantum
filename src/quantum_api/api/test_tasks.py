@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from fastapi.testclient import TestClient
 
 from common.dependencies import get_task_store
@@ -48,7 +48,7 @@ def test_get_task_completed(app, client):
     response = client.get(f"/tasks/{task_id}")
 
     # Assert
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == expected_response
 
 
@@ -76,7 +76,7 @@ def test_get_task_pending(app, client):
     response = client.get(f"/tasks/{task_id}")
 
     # Assert
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == expected_response
 
 
@@ -95,7 +95,7 @@ def test_get_task_not_found(app, client):
     response = client.get(f"/tasks/{task_id}")
 
     # Assert
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json() == expected_response
 
 
@@ -115,7 +115,7 @@ def test_post_create_task_fails_on_invalid_input(app, client):
         response = client.post("/tasks", json={"qc": qc_payload})
 
     # Assert
-    assert response.status_code == 400
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert response.json() == expected_response
 
 
@@ -137,6 +137,6 @@ def test_post_create_task_success(app, client):
         response = client.post("/tasks", json={"qc": qc_payload})
 
     # Assert
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_202_ACCEPTED
     assert response.json() == expected_response
     assert mock_publisher.publish.call_count == 1
