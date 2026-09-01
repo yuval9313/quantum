@@ -17,4 +17,4 @@ COPY src/ ./src/
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev
 
-CMD ["uv", "run", "faststream", "run", "src.quantom_service.main:app"]
+CMD ["uv", "run", "fastapi", "run", "src/quantum_api/main.py", "--host", "0.0.0.0", "--port", "8000"]

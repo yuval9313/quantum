@@ -47,13 +47,14 @@ class TaskStore:
             session.add(record)
             await session.commit()
  
-    async def mark_completed(self, task_id: UUID) -> None:
+    async def mark_completed(self, task_id: UUID, result: dict) -> None:
         async with self._session_factory() as session:
             record = await session.get(TaskRecord, task_id)
             if record is None:
                 return
             record.status = TaskStatus.COMPLETED
             record.updated_at = datetime.now(timezone.utc)
+            record.result = result
             session.add(record)
             await session.commit()
  

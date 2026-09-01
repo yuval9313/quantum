@@ -1,8 +1,8 @@
 services:
-  quantom_api:
+  quantum_api:
     build:
       context: .
-      dockerfile: src/quantom_api/Dockerfile
+      dockerfile: src/quantum_api/Dockerfile
     ports:
       - "8000:8000"
     environment:
@@ -15,10 +15,10 @@ services:
       redis:
         condition: service_healthy
 
-  quantom_service:
+  quantum_service:
     build:
       context: .
-      dockerfile: src/quantom_service/Dockerfile
+      dockerfile: src/quantum_service/Dockerfile
     environment:
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/quantom
       - REDIS_URL=redis://redis:6379

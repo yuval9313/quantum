@@ -7,13 +7,13 @@ from fastapi.testclient import TestClient
 
 from common.models import TaskRecord, TaskStatus
 from common.dependencies import get_task_store
-from .api import router
+from .tasks import router as tasks_router
 
 
 @pytest.fixture
-def app():
+def app() -> FastAPI:
     app = FastAPI()
-    app.include_router(router, prefix="/tasks")
+    app.include_router(tasks_router)
     return app
 
 
@@ -110,7 +110,7 @@ def test_post_create_task(app, client):
 
     # Act
     with patch("quantom_api.api.api.uuid4", return_value=mock_task_id):
-        response = client.post("/tasks", params={"qc": qc_payload})
+        response = client.post("/tasks", body={"qc": qc_payload})
 
     # Assert
     assert response.status_code == 200

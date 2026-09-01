@@ -1,13 +1,14 @@
+import qiskit
 from common.tasks_broker import create_new_task
 from common.models import TaskMessage, TaskStatus
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from uuid import UUID, uuid4
 from typing import Annotated
 
 from common.dependencies import get_task_store
-from common.task_repo import TaskStore
+from common.task_store import TaskStore
 
-router = APIRouter()
+router = APIRouter(prefix="/tasks", tags=["tasks"])
 TaskStoreDep = Annotated[TaskStore, Depends(get_task_store)]
 
 ANSWERS = {
@@ -28,6 +29,11 @@ async def get_task(task_id: UUID, task_store: TaskStoreDep):
 
 @router.post("")
 async def create_task(qc: str, task_store: TaskStoreDep):
+    try:
+        qiskit.qasm3.loads(qc)
+    except qiskit.qasm3.QASM3Error as error:
+        raise HTTPException(status_code=400, detail=f"Invalid QASM3 code. error: {error}")
+
     task_id = uuid4()
     await task_store.create(TaskMessage(task_id=task_id, qc=qc))
     await create_new_task(TaskMessage(task_id=task_id, qc=qc))
