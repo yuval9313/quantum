@@ -1,3 +1,6 @@
+from fastapi import status
+from qiskit import QuantumCircuit
+from qiskit import qasm3
 import asyncio
 from uuid import UUID
 import pytest
@@ -12,17 +15,20 @@ from common.dependencies import DATABASE_URL
 
 pytestmark = pytest.mark.integration
 
-VALID_QC = (
-    'OPENQASM 3.0;\n'
-    'include "stdgates.inc";\n'
-    'bit[2] c;\n'
-    'qubit[2] q;\n'
-    'h q[0];\n'
-    'cx q[0], q[1];\n'
-    'c[0] = measure q[0];\n'
-    'c[1] = measure q[1];\n'
-)
 
+def create_basic_quantum_circuit() -> QuantumCircuit: 
+    qc = QuantumCircuit(2, 2) 
+    qc.h(0)                     
+    qc.cx(0, 1)                 
+    qc.measure([0, 1], [0, 1])  
+    return qc 
+
+
+@pytest.fixture
+def valid_qc() -> str:
+    qc = create_basic_quantum_circuit()
+    return qasm3.dumps(qc)
+    
 
 @pytest.fixture
 def api_client():
@@ -46,7 +52,7 @@ async def db_store():
 
 @pytest.mark.anyio
 @pytest.mark.integration
-async def test_task_creation_and_pending_status(api_client, redis_client, db_store):
+async def test_task_creation_and_pending_status(api_client, redis_client, db_store, valid_qc: str):
     """
     1. Create a task via POST /tasks.
     2. Verify task status is 'pending' in Postgres database.
@@ -54,8 +60,8 @@ async def test_task_creation_and_pending_status(api_client, redis_client, db_sto
     4. Verify task message exists in Redis stream 'tasks'.
     """
     # 1. Post task to API
-    post_response = api_client.post("/tasks", json={"qc": VALID_QC})
-    assert post_response.status_code == 200
+    post_response = api_client.post("/tasks", json={"qc": valid_qc})
+    assert post_response.status_code == status.HTTP_202_ACCEPTED
     response_data = post_response.json()
     assert "task_id" in response_data
     assert response_data["message"] == "Task submitted successfully."
@@ -66,11 +72,11 @@ async def test_task_creation_and_pending_status(api_client, redis_client, db_sto
     db_record = await db_store.get(task_id)
     assert db_record is not None
     assert db_record.status == TaskStatus.PENDING
-    assert db_record.qc == VALID_QC
+    assert db_record.qc == valid_qc
 
     # 3. Check API GET endpoint for pending status
     get_response = api_client.get(f"/tasks/{task_id_str}")
-    assert get_response.status_code == 200
+    assert get_response.status_code == status.HTTP_200_OK
     assert get_response.json() == {
         "status": "pending",
         "message": "Task is still in progress."
@@ -88,7 +94,7 @@ async def test_task_creation_and_pending_status(api_client, redis_client, db_sto
 
 @pytest.mark.anyio
 @pytest.mark.integration
-async def test_task_full_flow_completion(api_client, db_store):
+async def test_task_full_flow_completion(api_client, db_store, valid_qc: str):
     """
     1. Submit a task via POST /tasks.
     2. Wait for quantum_service to process message from Redis stream.
@@ -96,8 +102,8 @@ async def test_task_full_flow_completion(api_client, db_store):
     4. Verify execution result contains non-empty result counts.
     """
     # 1. Post task to API
-    post_response = api_client.post("/tasks", json={"qc": VALID_QC})
-    assert post_response.status_code == 200
+    post_response = api_client.post("/tasks", json={"qc": valid_qc})
+    assert post_response.status_code == status.HTTP_202_ACCEPTED
     task_id_str = post_response.json()["task_id"]
     task_id = UUID(task_id_str)
 
@@ -119,7 +125,7 @@ async def test_task_full_flow_completion(api_client, db_store):
 
     # 4. Assert API GET endpoint returns completed status and result dict
     get_response = api_client.get(f"/tasks/{task_id_str}")
-    assert get_response.status_code == 200
+    assert get_response.status_code == status.HTTP_200_OK
     api_data = get_response.json()
     assert api_data["status"] == "completed"
     assert api_data["result"] == completed_record.result

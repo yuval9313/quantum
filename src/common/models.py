@@ -13,6 +13,7 @@ from sqlmodel import SQLModel
 class TaskStatus(str, Enum):
     PENDING = "pending"
     COMPLETED = "completed"
+    ERROR = "error"
 
 
 class TaskMessage(BaseModel):

@@ -6,7 +6,6 @@ from common.dependencies import get_task_store
 from common.tasks_broker import broker
 
 from .api import tasks_router
-from .api.hidden import router as internal
 
 
 @asynccontextmanager
@@ -22,7 +21,6 @@ async def lifespan(app: FastAPI):
 def create_app() -> FastAPI:
     app = FastAPI(lifespan=lifespan)
     app.include_router(tasks_router)
-    app.include_router(internal)
     return app
 
 
