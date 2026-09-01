@@ -1,0 +1,18 @@
+[project]
+name = "quantom"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "asyncpg>=0.31.0",
+    "fastapi[standard]>=0.141.1",
+    "faststream[cli,redis]>=0.7.5",
+    "pytest>=9.1.1",
+    "qiskit>=2.5.2",
+    "sqlmodel>=0.0.42",
+    "tenacity>=9.1.4",
+]
+
+[tool.fastapi]
+entrypoint = "src.quantom_api.main:create_app"
