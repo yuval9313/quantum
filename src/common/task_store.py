@@ -1,16 +1,15 @@
-from sqlalchemy.ext.asyncio import create_async_engine
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
+from logging import getLogger
 from uuid import UUID
+
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncEngine
-from logging import get_logger
 
 from .models import TaskMessage, TaskRecord, TaskStatus
 
-logger = get_logger(__name__)
+logger = getLogger(__name__)
 
 
 class TaskStore:
@@ -39,14 +38,14 @@ class TaskStore:
                 logger.warning(f"Task {msg.task_id} already exists.")
                 await session.rollback()
  
-    async def record_attempt(self, task_id: UUID, error: Optional[str] = None) -> None:
+    async def record_attempt(self, task_id: UUID, error: str | None = None) -> None:
         async with self._session_factory() as session:
             record = await session.get(TaskRecord, task_id)
             if record is None:
                 return
             record.attempts += 1
             record.last_error = error
-            record.updated_at = datetime.now(timezone.utc)
+            record.updated_at = datetime.now(UTC)
             session.add(record)
             await session.commit()
  
@@ -56,12 +55,12 @@ class TaskStore:
             if record is None:
                 return
             record.status = TaskStatus.COMPLETED
-            record.updated_at = datetime.now(timezone.utc)
+            record.updated_at = datetime.now(UTC)
             record.result = result
             session.add(record)
             await session.commit()
  
-    async def get(self, task_id: UUID) -> Optional[TaskRecord]:
+    async def get(self, task_id: UUID) -> TaskRecord | None:
         async with self._session_factory() as session:
             return await session.get(TaskRecord, task_id)
  

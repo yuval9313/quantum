@@ -1,13 +1,14 @@
-from .core import execute_circuit_with_retry
-from common.tasks_broker import broker, tasks_stream
 from typing import Annotated
-from faststream import Logger
+
+from fast_depends import Depends
+from faststream import FastStream, Logger
+
+from common.dependencies import get_task_store
 from common.models import TaskMessage, TaskStatus
 from common.task_store import TaskStore
-from fast_depends import Depends
-from common.dependencies import get_task_store
-from faststream import FastStream
-from common.tasks_broker import broker
+from common.tasks_broker import broker, tasks_stream
+
+from .core import execute_circuit_with_retry
 
 TaskStoreDep = Annotated[TaskStore, Depends(get_task_store)]
 

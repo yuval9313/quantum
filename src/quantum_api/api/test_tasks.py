@@ -1,12 +1,14 @@
-from datetime import datetime, timezone
-from uuid import uuid4
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
+from uuid import uuid4
+
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from common.models import TaskRecord, TaskStatus
 from common.dependencies import get_task_store
+from common.models import TaskRecord, TaskStatus
+
 from .tasks import router as tasks_router
 
 
@@ -34,9 +36,9 @@ def test_get_task_completed(app, client):
         task_id=task_id,
         status=TaskStatus.COMPLETED,
         qc="bell_state_circuit",
-        created_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
         result={"0": 512, "1": 512},
-        updated_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(UTC),
         attempts=0,
         last_error=None,
     )
@@ -62,9 +64,9 @@ def test_get_task_pending(app, client):
         task_id=task_id,
         status=TaskStatus.PENDING,
         qc="bell_state_circuit",
-        created_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
         result={},
-        updated_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(UTC),
         attempts=0,
         last_error=None,
     )
@@ -102,7 +104,8 @@ def test_post_create_task_fails_on_invalid_input(app, client):
     mock_task_id = uuid4()
     qc_payload = "bell_state_circuit"
     expected_response = {
-        "detail": "Invalid QASM3 code."
+        "status": "error",
+        "message": "Invalid QASM3 code."
     }
     task_store = AsyncMock()
     app.dependency_overrides[get_task_store] = lambda: task_store

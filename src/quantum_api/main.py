@@ -1,9 +1,12 @@
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
+
+from common.dependencies import get_task_store
+from common.tasks_broker import broker
+
 from .api import tasks_router
 from .api.hidden import router as internal
-from common.tasks_broker import broker
-from common.dependencies import get_task_store
 
 
 @asynccontextmanager
