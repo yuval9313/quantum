@@ -2,9 +2,11 @@ import os
 from uuid import uuid4
 
 from faststream.redis import RedisBroker, StreamSub
-from loguru import logger
+from logging import getLogger
 
 from common.models import TaskMessage
+
+logger = getLogger(__name__)
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 broker = RedisBroker(url=REDIS_URL)
