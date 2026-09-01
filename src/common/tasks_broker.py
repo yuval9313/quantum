@@ -16,4 +16,3 @@ publisher = broker.publisher(stream=tasks_stream)
 async def create_new_task(task: TaskMessage) -> None:
     logger.info(f"Publishing new task {task.task_id}")
     await publisher.publish(task)
-    

@@ -27,10 +27,7 @@ def client(app):
 def test_get_task_completed(app, client):
     # Arrange
     task_id = uuid4()
-    expected_response = {
-        "status": "completed",
-        "result": {"0": 512, "1": 512}
-    }
+    expected_response = {"status": "completed", "result": {"0": 512, "1": 512}}
     task_store = AsyncMock()
     task_store.get.return_value = TaskRecord(
         task_id=task_id,
@@ -55,10 +52,7 @@ def test_get_task_completed(app, client):
 def test_get_task_pending(app, client):
     # Arrange
     task_id = uuid4()
-    expected_response = {
-        "status": "pending",
-        "message": "Task is still in progress."
-    }
+    expected_response = {"status": "pending", "message": "Task is still in progress."}
     task_store = AsyncMock()
     task_store.get.return_value = TaskRecord(
         task_id=task_id,
@@ -83,10 +77,7 @@ def test_get_task_pending(app, client):
 def test_get_task_not_found(app, client):
     # Arrange
     task_id = uuid4()
-    expected_response = {
-        "status": "error",
-        "message": "Task not found."
-    }
+    expected_response = {"status": "error", "message": "Task not found."}
     task_store = AsyncMock()
     task_store.get.return_value = None
     app.dependency_overrides[get_task_store] = lambda: task_store
@@ -103,10 +94,7 @@ def test_post_create_task_fails_on_invalid_input(app, client):
     # Arrange
     mock_task_id = uuid4()
     qc_payload = "bell_state_circuit"
-    expected_response = {
-        "status": "error",
-        "message": "Invalid QASM3 code."
-    }
+    expected_response = {"status": "error", "message": "Invalid QASM3 code."}
     task_store = AsyncMock()
     app.dependency_overrides[get_task_store] = lambda: task_store
 
@@ -122,18 +110,20 @@ def test_post_create_task_fails_on_invalid_input(app, client):
 def test_post_create_task_success(app, client):
     # Arrange
     mock_task_id = uuid4()
-    qc_payload = "OPENQASM 3.0;\ninclude \"stdgates.inc\";\nbit[2] c;\nqubit[2] q;\nh q[0];\ncx q[0], q[1];\nc[0] = measure q[0];\nc[1] = measure q[1];\n"
+    qc_payload = 'OPENQASM 3.0;\ninclude "stdgates.inc";\nbit[2] c;\nqubit[2] q;\nh q[0];\ncx q[0], q[1];\nc[0] = measure q[0];\nc[1] = measure q[1];\n'
     expected_response = {
         "task_id": str(mock_task_id),
-        "message": "Task submitted successfully."
+        "message": "Task submitted successfully.",
     }
     task_store = AsyncMock()
     mock_publisher = AsyncMock()
     app.dependency_overrides[get_task_store] = lambda: task_store
 
     # Act
-    with patch("quantum_api.api.tasks.uuid4", return_value=mock_task_id), \
-         patch("common.tasks_broker.publisher", mock_publisher):
+    with (
+        patch("quantum_api.api.tasks.uuid4", return_value=mock_task_id),
+        patch("common.tasks_broker.publisher", mock_publisher),
+    ):
         response = client.post("/tasks", json={"qc": qc_payload})
 
     # Assert

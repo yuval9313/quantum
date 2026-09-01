@@ -15,7 +15,9 @@ logger = getLogger(__name__)
 class TaskStore:
     def __init__(self, database_url: str) -> None:
         self._engine: AsyncEngine = create_async_engine(database_url, echo=False)
-        self._session_factory = async_sessionmaker(self._engine, class_=AsyncSession, expire_on_commit=False)
+        self._session_factory = async_sessionmaker(
+            self._engine, class_=AsyncSession, expire_on_commit=False
+        )
 
     async def create_db_and_tables(self):
         async with self._engine.begin() as conn:
@@ -23,7 +25,7 @@ class TaskStore:
 
     async def close(self) -> None:
         await self._engine.dispose()
- 
+
     async def create(self, msg: TaskMessage) -> None:
         async with self._session_factory() as session:
             record = TaskRecord(
@@ -37,7 +39,7 @@ class TaskStore:
             except IntegrityError:
                 logger.warning(f"Task {msg.task_id} already exists.")
                 await session.rollback()
- 
+
     async def record_attempt(self, task_id: UUID, error: str | None = None) -> None:
         async with self._session_factory() as session:
             record = await session.get(TaskRecord, task_id)
@@ -49,20 +51,21 @@ class TaskStore:
             record.updated_at = datetime.now(UTC)
             session.add(record)
             await session.commit()
- 
+
     async def mark_completed(self, task_id: UUID, result: dict) -> None:
         async with self._session_factory() as session:
             record = await session.get(TaskRecord, task_id)
             if record is None:
-                logger.warning(f"Attempted to mark non-existent task {task_id} as completed")
+                logger.warning(
+                    f"Attempted to mark non-existent task {task_id} as completed"
+                )
                 return
             record.status = TaskStatus.COMPLETED
             record.updated_at = datetime.now(UTC)
             record.result = result
             session.add(record)
             await session.commit()
- 
+
     async def get(self, task_id: UUID) -> TaskRecord | None:
         async with self._session_factory() as session:
             return await session.get(TaskRecord, task_id)
- 

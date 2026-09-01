@@ -20,11 +20,12 @@ ANSWERS = {
     "pending": "Task is still in progress.",
     "error": "Task not found.",
     "invalid_qasm": "Invalid QASM3 code.",
-    "success": "Task submitted successfully."
+    "success": "Task submitted successfully.",
 }
 
+
 class TaskStatusResponse(BaseModel):
-    status: TaskStatus 
+    status: TaskStatus
     message: str | None = Field(default=None)
     result: dict | None = Field(default_factory=dict)
 
@@ -35,7 +36,9 @@ class TaskCreatedResponse(BaseModel):
 
 
 @router.get("/{task_id}", response_model_exclude_unset=True)
-async def get_task(task_id: UUID, task_store: TaskStoreDep, response: Response) -> TaskStatusResponse:
+async def get_task(
+    task_id: UUID, task_store: TaskStoreDep, response: Response
+) -> TaskStatusResponse:
     task = await task_store.get(task_id)
     if task is None:
         response.status_code = status.HTTP_404_NOT_FOUND
@@ -45,20 +48,29 @@ async def get_task(task_id: UUID, task_store: TaskStoreDep, response: Response) 
     return TaskStatusResponse(status=task.status, result=task.result)
 
 
-@router.post("", status_code=status.HTTP_202_ACCEPTED, responses={
-    status.HTTP_400_BAD_REQUEST: {"model": TaskStatusResponse}
-}, response_model_exclude_unset=True)
-async def create_task(qc: Annotated[str, Body(embed=True)], task_store: TaskStoreDep, response: Response) -> TaskStatusResponse | TaskCreatedResponse:
+@router.post(
+    "",
+    status_code=status.HTTP_202_ACCEPTED,
+    responses={status.HTTP_400_BAD_REQUEST: {"model": TaskStatusResponse}},
+    response_model_exclude_unset=True,
+)
+async def create_task(
+    qc: Annotated[str, Body(embed=True)], task_store: TaskStoreDep, response: Response
+) -> TaskStatusResponse | TaskCreatedResponse:
     try:
         qiskit.qasm3.loads(qc)
     except (openqasm3.parser.QASM3ParsingError, qiskit.qasm3.QASM3Error) as error:
         logger.warning(f"Rejected invalid QASM3 code payload: {error}")
         response.status_code = status.HTTP_400_BAD_REQUEST
-        return TaskStatusResponse(status=TaskStatus.ERROR, message=ANSWERS["invalid_qasm"])
+        return TaskStatusResponse(
+            status=TaskStatus.ERROR, message=ANSWERS["invalid_qasm"]
+        )
 
     task_id = uuid4()
     new_task = TaskMessage(task_id=task_id, qc=qc)
-    logger.info("Accepted new task submission", extra={"task_id": str(task_id), "qc": qc})
+    logger.info(
+        "Accepted new task submission", extra={"task_id": str(task_id), "qc": qc}
+    )
     await task_store.create(new_task)
     await create_new_task(new_task)
     return TaskCreatedResponse(task_id=task_id, message=ANSWERS["success"])

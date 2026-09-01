@@ -29,7 +29,9 @@ class TaskRecord(SQLModel, table=True):
     status: TaskStatus = SQLField(default=TaskStatus.PENDING, index=True)
     qc: str
     created_at: datetime = SQLField(sa_type=DateTime(timezone=True))
-    result: dict = SQLField(default_factory=dict, sa_column=Column(JSONB, nullable=False))
+    result: dict = SQLField(
+        default_factory=dict, sa_column=Column(JSONB, nullable=False)
+    )
     updated_at: datetime = SQLField(
         default_factory=lambda: datetime.now(UTC),
         sa_type=DateTime(timezone=True),
