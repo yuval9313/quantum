@@ -1,9 +1,8 @@
-import os
 from functools import lru_cache
 
-from .task_store import TaskStore
+from common.settings import DATABASE_URL
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost:5432/quantom")
+from .task_store import TaskStore
 
 
 @lru_cache

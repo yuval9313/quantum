@@ -1,17 +1,17 @@
-from fastapi import status
-from qiskit import QuantumCircuit
-from qiskit import qasm3
 import asyncio
 from uuid import UUID
+
 import pytest
 import redis.asyncio as redis_async
+from fastapi import status
+from qiskit import QuantumCircuit, qasm3
 from starlette.testclient import TestClient
 
-from quantum_api.main import app as api_app
+from common.dependencies import DATABASE_URL
 from common.models import TaskStatus
 from common.task_store import TaskStore
 from common.tasks_broker import REDIS_URL
-from common.dependencies import DATABASE_URL
+from quantum_api.main import app as api_app
 
 pytestmark = pytest.mark.integration
 

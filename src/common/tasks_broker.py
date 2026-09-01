@@ -1,18 +1,15 @@
-import os
 from logging import getLogger
-from uuid import uuid4
 
 from faststream.redis import RedisBroker, StreamSub
 
 from common.models import TaskMessage
+from common.settings import CONSUMER_ID, REDIS_URL
 
 logger = getLogger(__name__)
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 broker = RedisBroker(url=REDIS_URL)
 
-consumer_id = os.getenv("HOSTNAME", str(uuid4()))
-tasks_stream = StreamSub("tasks", group="task-workers", consumer=consumer_id)
+tasks_stream = StreamSub("tasks", group="task-workers", consumer=CONSUMER_ID)
 publisher = broker.publisher(stream=tasks_stream)
 
 
