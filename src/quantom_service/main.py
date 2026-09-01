@@ -1,5 +1,5 @@
 from faststream import FastStream
-from common.broker import broker, tasks_stream
+from common.tasks_broker import broker, tasks_stream
 from types import Annotated
 from faststream import Logger
 from common.models import TaskMessage

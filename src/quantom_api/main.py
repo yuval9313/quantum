@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from .api import router
-from common.broker import broker
+from common.tasks_broker import broker
 from common.dependencies import get_task_store
 
 

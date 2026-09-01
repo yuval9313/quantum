@@ -1,4 +1,4 @@
-from common.broker import create_new_task
+from common.tasks_broker import create_new_task
 from common.models import TaskMessage, TaskStatus
 from fastapi import APIRouter, Depends
 from uuid import UUID, uuid4
