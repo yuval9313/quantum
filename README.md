@@ -1,4 +1,4 @@
-# Quantom
+# Quantum
 
 Async quantum-circuit execution platform built with **FastAPI**, **FastStream**, **Redis Streams**, **PostgreSQL**, and **Qiskit Aer**.
 
@@ -26,7 +26,7 @@ docker compose up --build
 ## Project Structure
 
 ```
-quantom/
+quantum/
 ├── docker-compose.yml
 ├── pyproject.toml
 ├── src/
@@ -115,7 +115,7 @@ All application settings are loaded from environment variables with sensible def
 
 | Variable       | Used by     | Default                                                         | Description                                                                                 |
 | -------------- | ----------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `DATABASE_URL` | API, Worker | `postgresql+asyncpg://postgres:postgres@localhost:5432/quantom` | Async SQLAlchemy connection string for PostgreSQL                                           |
+| `DATABASE_URL` | API, Worker | `postgresql+asyncpg://postgres:postgres@localhost:5432/quantum` | Async SQLAlchemy connection string for PostgreSQL                                           |
 | `REDIS_URL`    | API, Worker | `redis://localhost:6379`                                        | Redis connection URL (used by FastStream broker)                                            |
 | `HOSTNAME`     | Worker      | random UUID                                                     | Consumer ID for the Redis Streams consumer group — defaults to container hostname in Docker |
 | `MAX_RETRIES`  | Worker      | `5`                                                             | Maximum retry attempts for circuit simulation failures (`MemoryError`, `AerError`)          |

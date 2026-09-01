@@ -846,7 +846,7 @@ wheels = [
 ]
 
 [[package]]
-name = "quantom"
+name = "quantum"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

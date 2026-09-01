@@ -56,11 +56,11 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=quantom
+      - POSTGRES_DB=quantum
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d quantom"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d quantum"]
       interval: 5s
       timeout: 3s
       retries: 5
