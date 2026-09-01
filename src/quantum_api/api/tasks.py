@@ -1,3 +1,5 @@
+import openqasm3
+from fastapi import Body
 import qiskit
 from common.tasks_broker import create_new_task
 from common.models import TaskMessage, TaskStatus
@@ -28,11 +30,11 @@ async def get_task(task_id: UUID, task_store: TaskStoreDep):
 
 
 @router.post("")
-async def create_task(qc: str, task_store: TaskStoreDep):
+async def create_task(qc: Annotated[str, Body(embed=True)], task_store: TaskStoreDep):
     try:
         qiskit.qasm3.loads(qc)
-    except qiskit.qasm3.QASM3Error as error:
-        raise HTTPException(status_code=400, detail=f"Invalid QASM3 code. error: {error}")
+    except openqasm3.parser.QASM3ParsingError:
+        raise HTTPException(status_code=400, detail=f"Invalid QASM3 code.")
 
     task_id = uuid4()
     await task_store.create(TaskMessage(task_id=task_id, qc=qc))
