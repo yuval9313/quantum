@@ -42,6 +42,7 @@ class TaskStore:
         async with self._session_factory() as session:
             record = await session.get(TaskRecord, task_id)
             if record is None:
+                logger.warning(f"Attempted to update non-existent task {task_id}")
                 return
             record.attempts += 1
             record.last_error = error
@@ -53,6 +54,7 @@ class TaskStore:
         async with self._session_factory() as session:
             record = await session.get(TaskRecord, task_id)
             if record is None:
+                logger.warning(f"Attempted to mark non-existent task {task_id} as completed")
                 return
             record.status = TaskStatus.COMPLETED
             record.updated_at = datetime.now(UTC)
