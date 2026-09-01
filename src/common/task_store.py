@@ -1,5 +1,4 @@
 from sqlalchemy.ext.asyncio import create_async_engine
-from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID
@@ -7,8 +6,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncEngine
+from logging import get_logger
 
 from .models import TaskMessage, TaskRecord, TaskStatus
+
+logger = get_logger(__name__)
 
 
 class TaskStore:
@@ -34,6 +36,7 @@ class TaskStore:
             try:
                 await session.commit()
             except IntegrityError:
+                logger.warning(f"Task {msg.task_id} already exists.")
                 await session.rollback()
  
     async def record_attempt(self, task_id: UUID, error: Optional[str] = None) -> None:

@@ -1,3 +1,4 @@
+from redis import asyncio
 import qiskit
 from tenacity import (
     retry,
@@ -18,5 +19,6 @@ from common.quantum_circuit import execute_circuit
     reraise=True,
 )
 async def execute_circuit_with_retry(qc: str) -> dict:
-    return execute_circuit(qiskit.qasm3.loads(qc))
+    encoded_circuit = qiskit.qasm3.loads(qc)
+    return await asyncio.to_thread(execute_circuit, encoded_circuit)
 
