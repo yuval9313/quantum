@@ -1,10 +1,9 @@
 import asyncio
 import logging
 
-from qiskit import QuantumCircuit, transpile, qasm3
-from qiskit_aer import AerSimulator
-
 from faststream import Context
+from qiskit import QuantumCircuit, qasm3, transpile
+from qiskit_aer import AerSimulator
 from tenacity import (
     before_sleep_log,
     retry,
@@ -12,8 +11,6 @@ from tenacity import (
     stop_after_attempt,
     wait_exponential,
 )
-
-from common.quantum_circuit import execute_circuit
 
 NUM_SHOTS = 1024 
 

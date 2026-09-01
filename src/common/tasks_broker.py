@@ -1,8 +1,8 @@
 import os
+from logging import getLogger
 from uuid import uuid4
 
 from faststream.redis import RedisBroker, StreamSub
-from logging import getLogger
 
 from common.models import TaskMessage
 
