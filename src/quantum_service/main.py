@@ -17,7 +17,7 @@ app = FastStream(broker)
 @broker.subscriber(stream=tasks_stream)
 async def handle_task(msg: TaskMessage, logger: Logger, store: TaskStoreDep) -> None:
     logger.info(
-        "Received task",
+        f"Received task {msg.task_id}",
         extra={"task_id": str(msg.task_id), "status": TaskStatus.PENDING},
     )
 

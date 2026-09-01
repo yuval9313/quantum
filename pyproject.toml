@@ -9,6 +9,7 @@ dependencies = [
     "fastapi[standard]>=0.141.1",
     "faststream[cli,redis]>=0.7.5",
     "pytest>=9.1.1",
+    "pytest-dotenv>=0.5.2",
     "qiskit>=2.5.2",
     "qiskit-aer>=0.17.2",
     "qiskit-qasm3-import>=0.6.0",
@@ -22,3 +23,4 @@ addopts = "-m 'not integration'"
 markers = [
     "integration: mark test as an integration test.",
 ]
+env_files = ["integration_tests/.env.test"]

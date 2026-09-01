@@ -6,7 +6,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/quantom
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/quantum
       - REDIS_URL=redis://redis:6379
       - PYTHONPATH=/app/src
     depends_on:
@@ -20,7 +20,7 @@ services:
       context: .
       dockerfile: src/quantum_service/Dockerfile
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/quantom
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/quantum
       - REDIS_URL=redis://redis:6379
       - PYTHONPATH=/app/src
     depends_on:
