@@ -96,6 +96,7 @@ def test_get_task_not_found(app, client):
     assert response.status_code == 200
     assert response.json() == expected_response
 
+
 def test_post_create_task_fails_on_invalid_input(app, client):
     # Arrange
     mock_task_id = uuid4()
@@ -114,6 +115,7 @@ def test_post_create_task_fails_on_invalid_input(app, client):
     assert response.status_code == 400
     assert response.json() == expected_response
 
+
 def test_post_create_task_success(app, client):
     # Arrange
     mock_task_id = uuid4()
@@ -123,12 +125,15 @@ def test_post_create_task_success(app, client):
         "message": "Task submitted successfully."
     }
     task_store = AsyncMock()
+    mock_publisher = AsyncMock()
     app.dependency_overrides[get_task_store] = lambda: task_store
 
     # Act
-    with patch("quantum_api.api.tasks.uuid4", return_value=mock_task_id):
+    with patch("quantum_api.api.tasks.uuid4", return_value=mock_task_id), \
+         patch("common.tasks_broker.publisher", mock_publisher):
         response = client.post("/tasks", json={"qc": qc_payload})
 
     # Assert
     assert response.status_code == 200
     assert response.json() == expected_response
+    assert mock_publisher.publish.call_count == 1

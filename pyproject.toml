@@ -16,3 +16,10 @@ dependencies = [
     "sqlmodel>=0.0.42",
     "tenacity>=9.1.4",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+addopts = "-m 'not integration'"
+markers = [
+    "integration: mark test as an integration test.",
+]
