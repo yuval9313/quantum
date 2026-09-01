@@ -15,7 +15,6 @@ app = FastStream(broker)
 
 @broker.subscriber(stream=tasks_stream)
 async def handle_task(msg: TaskMessage, logger: Logger, store: TaskStoreDep) -> None:
-    await store.create(msg)
     logger.info(f"Received task {msg.task_id} (status={TaskStatus.PENDING})")
  
     try:

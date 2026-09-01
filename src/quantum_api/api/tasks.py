@@ -37,6 +37,7 @@ async def create_task(qc: Annotated[str, Body(embed=True)], task_store: TaskStor
         raise HTTPException(status_code=400, detail=f"Invalid QASM3 code.")
 
     task_id = uuid4()
-    await task_store.create(TaskMessage(task_id=task_id, qc=qc))
-    await create_new_task(TaskMessage(task_id=task_id, qc=qc))
+    new_task = TaskMessage(task_id=task_id, qc=qc)
+    await task_store.create(new_task)
+    await create_new_task(new_task)
     return {"task_id": task_id, "message": "Task submitted successfully."}
