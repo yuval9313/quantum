@@ -5,34 +5,23 @@ from uuid import UUID, uuid4
 import openqasm3
 import qiskit
 from fastapi import APIRouter, Body, Depends, Response, status
-from pydantic import BaseModel, Field
 
-from common.dependencies import get_task_store
 from common.models import TaskMessage, TaskStatus
-from common.task_store import TaskStore
+from common.task_store import TaskStore, get_task_store
 from common.tasks_broker import create_new_task
+
+from ..data_models import TaskCreatedResponse, TaskStatusResponse
 
 logger = getLogger(__name__)
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 TaskStoreDep = Annotated[TaskStore, Depends(get_task_store)]
 
-ANSWERS = {
+MESSAGES = {
     "pending": "Task is still in progress.",
     "error": "Task not found.",
     "invalid_qasm": "Invalid QASM3 code.",
     "success": "Task submitted successfully.",
 }
-
-
-class TaskStatusResponse(BaseModel):
-    status: TaskStatus
-    message: str | None = Field(default=None)
-    result: dict | None = Field(default_factory=dict)
-
-
-class TaskCreatedResponse(BaseModel):
-    task_id: UUID
-    message: str
 
 
 @router.get("/{task_id}", response_model_exclude_unset=True)
@@ -42,9 +31,9 @@ async def get_task(
     task = await task_store.get(task_id)
     if task is None:
         response.status_code = status.HTTP_404_NOT_FOUND
-        return TaskStatusResponse(status=TaskStatus.ERROR, message=ANSWERS["error"])
+        return TaskStatusResponse(status=TaskStatus.ERROR, message=MESSAGES["error"])
     if task.status != TaskStatus.COMPLETED:
-        return TaskStatusResponse(status=task.status, message=ANSWERS["pending"])
+        return TaskStatusResponse(status=task.status, message=MESSAGES["pending"])
     return TaskStatusResponse(status=task.status, result=task.result)
 
 
@@ -63,7 +52,7 @@ async def create_task(
         logger.warning(f"Rejected invalid QASM3 code payload: {error}")
         response.status_code = status.HTTP_400_BAD_REQUEST
         return TaskStatusResponse(
-            status=TaskStatus.ERROR, message=ANSWERS["invalid_qasm"]
+            status=TaskStatus.ERROR, message=MESSAGES["invalid_qasm"]
         )
 
     task_id = uuid4()
@@ -73,4 +62,4 @@ async def create_task(
     )
     await task_store.create(new_task)
     await create_new_task(new_task)
-    return TaskCreatedResponse(task_id=task_id, message=ANSWERS["success"])
+    return TaskCreatedResponse(task_id=task_id, message=MESSAGES["success"])

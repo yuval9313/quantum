@@ -6,3 +6,5 @@ DATABASE_URL = os.getenv(
 )
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 CONSUMER_ID = os.getenv("HOSTNAME", str(uuid4()))
+
+MAX_RETRIES = int(os.getenv("MAX_RETRIES", "5"))

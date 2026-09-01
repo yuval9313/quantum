@@ -3,12 +3,11 @@ from typing import Annotated
 from fast_depends import Depends
 from faststream import FastStream, Logger
 
-from common.dependencies import get_task_store
 from common.models import TaskMessage, TaskStatus
-from common.task_store import TaskStore
+from common.task_store import TaskStore, get_task_store
 from common.tasks_broker import broker, tasks_stream
 
-from .core import execute_circuit
+from .circuit_execution import execute_circuit
 
 TaskStoreDep = Annotated[TaskStore, Depends(get_task_store)]
 

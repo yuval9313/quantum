@@ -7,28 +7,27 @@ from fastapi import status
 from qiskit import QuantumCircuit, qasm3
 from starlette.testclient import TestClient
 
-from common.dependencies import DATABASE_URL
 from common.models import TaskStatus
+from common.settings import DATABASE_URL, REDIS_URL
 from common.task_store import TaskStore
-from common.tasks_broker import REDIS_URL
 from quantum_api.main import app as api_app
 
 pytestmark = pytest.mark.integration
 
 
-def create_basic_quantum_circuit() -> QuantumCircuit: 
-    qc = QuantumCircuit(2, 2) 
-    qc.h(0)                     
-    qc.cx(0, 1)                 
-    qc.measure([0, 1], [0, 1])  
-    return qc 
+def create_basic_quantum_circuit() -> QuantumCircuit:
+    qc = QuantumCircuit(2, 2)
+    qc.h(0)
+    qc.cx(0, 1)
+    qc.measure([0, 1], [0, 1])
+    return qc
 
 
 @pytest.fixture
 def valid_qc() -> str:
     qc = create_basic_quantum_circuit()
     return qasm3.dumps(qc)
-    
+
 
 @pytest.fixture
 def api_client():
@@ -52,7 +51,9 @@ async def db_store():
 
 @pytest.mark.anyio
 @pytest.mark.integration
-async def test_task_creation_and_pending_status(api_client, redis_client, db_store, valid_qc: str):
+async def test_task_creation_and_pending_status(
+    api_client, redis_client, db_store, valid_qc: str
+):
     """
     1. Create a task via POST /tasks.
     2. Verify task status is 'pending' in Postgres database.
@@ -79,7 +80,7 @@ async def test_task_creation_and_pending_status(api_client, redis_client, db_sto
     assert get_response.status_code == status.HTTP_200_OK
     assert get_response.json() == {
         "status": "pending",
-        "message": "Task is still in progress."
+        "message": "Task is still in progress.",
     }
 
     # 4. Check Redis stream 'tasks' for published task message
@@ -118,7 +119,9 @@ async def test_task_full_flow_completion(api_client, db_store, valid_qc: str):
         await asyncio.sleep(0.5)
 
     # 3. Assert DB record completed
-    assert completed_record is not None, f"Task {task_id_str} did not transition to COMPLETED state within timeout"
+    assert completed_record is not None, (
+        f"Task {task_id_str} did not transition to COMPLETED state within timeout"
+    )
     assert completed_record.status == TaskStatus.COMPLETED
     assert isinstance(completed_record.result, dict)
     assert len(completed_record.result) > 0

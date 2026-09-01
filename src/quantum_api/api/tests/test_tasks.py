@@ -2,29 +2,14 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
-import pytest
 from fastapi import FastAPI, status
 from fastapi.testclient import TestClient
 
-from common.dependencies import get_task_store
 from common.models import TaskRecord, TaskStatus
-
-from .tasks import router as tasks_router
-
-
-@pytest.fixture
-def app() -> FastAPI:
-    app = FastAPI()
-    app.include_router(tasks_router)
-    return app
+from common.task_store import get_task_store
 
 
-@pytest.fixture
-def client(app):
-    return TestClient(app)
-
-
-def test_get_task_completed(app, client):
+def test_get_task_completed(app: FastAPI, client: TestClient):
     # Arrange
     task_id = uuid4()
     expected_response = {"status": "completed", "result": {"0": 512, "1": 512}}
@@ -49,7 +34,7 @@ def test_get_task_completed(app, client):
     assert response.json() == expected_response
 
 
-def test_get_task_pending(app, client):
+def test_get_task_pending(app: FastAPI, client: TestClient):
     # Arrange
     task_id = uuid4()
     expected_response = {"status": "pending", "message": "Task is still in progress."}
@@ -74,7 +59,7 @@ def test_get_task_pending(app, client):
     assert response.json() == expected_response
 
 
-def test_get_task_not_found(app, client):
+def test_get_task_not_found(app: FastAPI, client: TestClient):
     # Arrange
     task_id = uuid4()
     expected_response = {"status": "error", "message": "Task not found."}
@@ -90,7 +75,7 @@ def test_get_task_not_found(app, client):
     assert response.json() == expected_response
 
 
-def test_post_create_task_fails_on_invalid_input(app, client):
+def test_post_create_task_fails_on_invalid_input(app: FastAPI, client: TestClient):
     # Arrange
     mock_task_id = uuid4()
     qc_payload = "bell_state_circuit"
@@ -107,7 +92,7 @@ def test_post_create_task_fails_on_invalid_input(app, client):
     assert response.json() == expected_response
 
 
-def test_post_create_task_success(app, client):
+def test_post_create_task_success(app: FastAPI, client: TestClient):
     # Arrange
     mock_task_id = uuid4()
     qc_payload = 'OPENQASM 3.0;\ninclude "stdgates.inc";\nbit[2] c;\nqubit[2] q;\nh q[0];\ncx q[0], q[1];\nc[0] = measure q[0];\nc[1] = measure q[1];\n'

@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from functools import lru_cache
 from logging import getLogger
 from uuid import UUID
 
@@ -8,8 +9,14 @@ from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from .models import TaskMessage, TaskRecord, TaskStatus
+from .settings import DATABASE_URL
 
 logger = getLogger(__name__)
+
+
+@lru_cache
+def get_task_store() -> TaskStore:
+    return TaskStore(DATABASE_URL)
 
 
 class TaskStore:
@@ -26,18 +33,18 @@ class TaskStore:
     async def close(self) -> None:
         await self._engine.dispose()
 
-    async def create(self, msg: TaskMessage) -> None:
+    async def create(self, message: TaskMessage) -> None:
         async with self._session_factory() as session:
             record = TaskRecord(
-                task_id=msg.task_id,
-                qc=msg.qc,
-                created_at=msg.created_at,
+                task_id=message.task_id,
+                qc=message.qc,
+                created_at=message.created_at,
             )
             session.add(record)
             try:
                 await session.commit()
             except IntegrityError:
-                logger.warning(f"Task {msg.task_id} already exists.")
+                logger.warning(f"Task {message.task_id} already exists.")
                 await session.rollback()
 
     async def record_attempt(self, task_id: UUID, error: str | None = None) -> None:

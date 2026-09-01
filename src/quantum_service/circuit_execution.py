@@ -12,7 +12,7 @@ from tenacity import (
     wait_exponential,
 )
 
-from .constants import MAX_RETRIES
+from common.settings import MAX_RETRIES
 
 NUM_SHOTS = 1024
 RETRY_EXCEPTIONS = (MemoryError, AerError)
