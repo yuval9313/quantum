@@ -6,8 +6,8 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from common.models import TaskRecord, TaskStatus
+from common.dependencies import get_task_store
 from .api import router
-from .dependencies import get_task_store
 
 
 @pytest.fixture

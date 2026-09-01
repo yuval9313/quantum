@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from .api import router
 from common.broker import broker
-from .api.dependencies import get_task_store
+from common.dependencies import get_task_store
 
 
 @asynccontextmanager
@@ -15,8 +15,10 @@ async def lifespan(app: FastAPI):
     await task_store.close()
 
 
-async def create_app() -> FastAPI:
+def create_app() -> FastAPI:
     app = FastAPI(lifespan=lifespan)
     app.include_router(router, prefix="/tasks", tags=["tasks"])
-    
     return app
+
+
+app = create_app()

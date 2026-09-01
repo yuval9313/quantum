@@ -1,9 +1,10 @@
+from common.broker import create_new_task
 from common.models import TaskMessage, TaskStatus
-from sqlalchemy.util.typing import Annotated
 from fastapi import APIRouter, Depends
 from uuid import UUID, uuid4
+from typing import Annotated
 
-from .dependencies import get_task_store
+from common.dependencies import get_task_store
 from common.task_repo import TaskStore
 
 router = APIRouter()
@@ -29,4 +30,5 @@ async def get_task(task_id: UUID, task_store: TaskStoreDep):
 async def create_task(qc: str, task_store: TaskStoreDep):
     task_id = uuid4()
     await task_store.create(TaskMessage(task_id=task_id, qc=qc))
+    await create_new_task(TaskMessage(task_id=task_id, qc=qc))
     return {"task_id": task_id, "message": "Task submitted successfully."}

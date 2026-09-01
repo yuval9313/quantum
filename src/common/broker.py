@@ -1,12 +1,17 @@
-from faststream.redis import RedisBroker
+from common.models import TaskMessage
+from common.dependencies import get_task_store
+import os
+from faststream.redis import RedisBroker, StreamSub
+from loguru import logger
 
-broker = RedisBroker(url="redis://localhost:6379")
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+broker = RedisBroker(url=REDIS_URL)
 
-@broker.publisher("tasks")
-def create_new_task():
-    pass
+tasks_stream = StreamSub("tasks", group="task-workers", consumer="1")
 
 
-@broker.subscriber("tasks")
-def subscribe_to_task():
-    pass
+@broker.publisher(stream=tasks_stream)
+async def create_new_task(task: TaskMessage) -> TaskMessage:
+    logger.info(f"Publishing new task {task.task_id}")
+    return task
+    
